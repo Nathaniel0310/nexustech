@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusTech B2B Solutions | Enterprise Promotional Portal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & React-DOM CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel CDN (Inline JSX Parsing) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- jsPDF CDN (For PDF Proposal Export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Tailwind Custom Overrides & Case Study Visual Identity Specifications -->
+  <style>
+    body {
+      background-color: #0B0F19; /* Deep Slate */
+      color: #E2E8F0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+    }
+    .glass-surface {
+      background: rgba(255, 255, 255, 0.05); /* Glass Surface */
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-card {
+      transition: all 0.3s ease;
+    }
+    .glass-card:hover {
+      border-color: #00F0FF; /* Electric Cyan */
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+    .neon-glow {
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.4); /* Neon Violet */
+    }
+    .cyan-glow {
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-[#00F0FF] selection:text-black">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useReducer, useRef } = React;
+
+    // --- 1. STATE MANAGEMENT & REDUCERS ---
+    const roiInitialState = { headcount: 250, branches: 5 };
+    function roiReducer(state, action) {
+      switch (action.type) {
+        case 'SET_HEADCOUNT': return { ...state, headcount: Number(action.payload) };
+        case 'SET_BRANCHES': return { ...state, branches: Number(action.payload) };
+        default: return state;
+      }
+    }
+
+    // Static Data for Comparison Matrix
+    const matrixData = [
+      { feature: "Multi-Branch Cloud Sync", erp: "Instant Real-time Relay", traditional: "Batch Nightly Sync", category: "Architecture" },
+      { feature: "Automated Tax Compliance", erp: "AI Multi-Jurisdiction", traditional: "Manual Calculation", category: "Compliance" },
+      { feature: "Biometric Shift Sync", erp: "Native Hardware Hook", traditional: "3rd-Party Add-on", category: "HRIS" },
+      { feature: "Custom Proposal Generation", erp: "Instant PDF Export", traditional: "3-5 Sales Days", category: "Workflow" },
+      { feature: "System Uptime Guarantee", erp: "99.99% SLA", traditional: "99.5% Standard", category: "Infrastructure" }
+    ];
+
+    // Static Data for Testimonials
+    const testimonials = [
+      { quote: "NexusTech reduced our multi-branch reconciliation from 4 days to under 12 minutes.", client: "Apex Logistics", role: "VP of Enterprise Infrastructure", metric: "98% Faster Reconciliation" },
+      { quote: "The interactive ROI model was accurate down to the cent. Onboarding took under a week.", client: "Vanguard Global Tech", role: "Chief Operating Officer", metric: "3.4x Annual ROI" },
+      { quote: "Automated tax compliance across 14 state branches saved us thousands in labor costs.", client: "Aura Retail Corp", role: "Director of HR & Payroll", metric: "$140k Annual Labor Savings" }
+    ];
+
+    function App() {
+      // Interactive ROI State (useReducer)
+      const [roiState, dispatchRoi] = useReducer(roiReducer, roiInitialState);
+      
+      // Module Configurator State
+      const [modules, setModules] = useState({
+        biometric: true,
+        cloudRelay: true,
+        aiTax: false
+      });
+
+      // Interactive Micro-Demos State
+      const [activeDemo, setActiveDemo] = useState('pos'); // 'pos', 'payroll', 'analytics'
+      const [scannedBarcode, setScannedBarcode] = useState('');
+      const [scanLogs, setScanLogs] = useState([]);
+      const [isPayrollRunning, setIsPayrollRunning] = useState(false);
+      const [payrollProgress, setPayrollProgress] = useState(0);
+
+      // Feature Matrix Filter State
+      const [matrixFilter, setMatrixFilter] = useState('All');
+
+      // Testimonial Carousel Auto-Play State
+      const [carouselIdx, setCarouselIdx] = useState(0);
+      const [isHovered, setIsHovered] = useState(false);
+
+      // VIP Sandbox Modal State
+      const [isModalOpen, setIsModalOpen] = useState(false);
+
+      // Derived ROI Calculations
+      const hoursSavedAnnual = Math.round(roiState.headcount * 14 * roiState.branches);
+      const estimatedSavings = Math.round(hoursSavedAnnual * 42);
+      const roiPercentage = Math.min(380, Math.round((estimatedSavings / (roiState.headcount * 210)) * 100));
+
+      // Auto-play Carousel Listener (Pauses on Hover)
+      useEffect(() => {
+        if (isHovered) return;
+        const interval = setInterval(() => {
+          setCarouselIdx((prev) => (prev + 1) % testimonials.length);
+        }, 4000);
+        return () => clearInterval(interval);
+      }, [isHovered]);
+
+      // Micro-Demo: Barcode Scanner Simulation
+      const handleScan = () => {
+        const items = ["SKU-8821 (Enterprise POS Hub)", "SKU-3091 (Biometric Terminal)", "SKU-1044 (Cloud Router)"];
+        const randomItem = items[Math.floor(Math.random() * items.length)];
+        const newLog = `${new Date().toLocaleTimeString()} - Scanned: ${randomItem}`;
+        setScanLogs(prev => [newLog, ...prev.slice(0, 3)]);
+        setScannedBarcode('');
+      };
+
+      // Micro-Demo: Payroll Run Simulation
+      const runPayrollSimulation = () => {
+        setIsPayrollRunning(true);
+        setPayrollProgress(0);
+        let current = 0;
+        const timer = setInterval(() => {
+          current += 20;
+          setPayrollProgress(current);
+          if (current >= 100) {
+            clearInterval(timer);
+            setIsPayrollRunning(false);
+          }
+        }, 300);
+      };
+
+      // Toggle Add-on Modules
+      const toggleModule = (key) => {
+        setModules(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      // Client-Side PDF Proposal Generator (jsPDF)
+      const exportPDFProposal = () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // PDF Styling & Header
+        doc.setFillColor(11, 15, 25);
+        doc.rect(0, 0, 210, 297, 'F');
+
+        doc.setTextColor(0, 240, 255);
+        doc.setFontSize(22);
+        doc.text("NexusTech B2B Solutions", 20, 25);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.text("Enterprise Software Custom Proposal Summary", 20, 35);
+
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0, 240, 255);
+        doc.line(20, 40, 190, 40);
+
+        // Parameters Section
+        doc.setFontSize(12);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`Target Employee Headcount: ${roiState.headcount}`, 20, 55);
+        doc.text(`Active Enterprise Branches: ${roiState.branches}`, 20, 65);
+
+        // Computed Savings Section
+        doc.setTextColor(124, 58, 237);
+        doc.setFontSize(14);
+        doc.text("Projected ROI Impact", 20, 80);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        doc.text(`• Estimated Annual Monetary Savings: $${estimatedSavings.toLocaleString()}`, 25, 92);
+        doc.text(`• Estimated Annual Labor Hours Saved: ${hoursSavedAnnual.toLocaleString()} Hours`, 25, 102);
+        doc.text(`• Projected ROI Percentage: ${roiPercentage}%`, 25, 112);
+
+        // Selected Modules Section
+        doc.setTextColor(0, 240, 255);
+        doc.setFontSize(14);
+        doc.text("Selected Architecture Add-ons", 20, 130);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        let yPos = 142;
+        if (modules.biometric) { doc.text(" [X] Biometric Hardware Shift Sync", 25, yPos); yPos += 10; }
+        if (modules.cloudRelay) { doc.text(" [X] Multi-Branch Low-Latency Cloud Relay", 25, yPos); yPos += 10; }
+        if (modules.aiTax) { doc.text(" [X] AI Multi-Jurisdictional Tax Automation", 25, yPos); yPos += 10; }
+
+        // Footer
+        doc.setTextColor(150, 150, 150);
+        doc.setFontSize(9);
+        doc.text("Generated via NexusTech Interactive Promotional Portal | 99.99% Availability Guaranteed", 20, 270);
+
+        doc.save("NexusTech_Enterprise_Proposal.pdf");
+      };
+
+      const filteredMatrix = matrixFilter === 'All' 
+        ? matrixData 
+        : matrixData.filter(item => item.category === matrixFilter);
+
+      return (
+        <div class="relative overflow-hidden pb-28">
+          
+          {/* Animated Tech Grid Backdrop */}
+          <div class="absolute inset-0 z-0 opacity-15 pointer-events-none bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:20px_20px]"></div>
+
+          {/* Top Navigation */}
+          <nav class="sticky top-0 z-40 glass-surface px-6 py-4 flex justify-between items-center border-b border-white/10">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-[#00F0FF] animate-pulse"></span>
+              <span class="text-xl font-bold tracking-wider text-white">Nexus<span class="text-[#00F0FF]">Tech</span></span>
+            </div>
+            <div class="flex items-center space-x-6">
+              <span class="text-xs text-slate-300 hidden sm:inline-flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 99.99% Availability SLA
+              </span>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                class="bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2 rounded-lg text-xs font-semibold transition neon-glow">
+                VIP Sandbox Access
+              </button>
+            </div>
+          </nav>
+
+          {/* 1. Hero Section */}
+          <header class="relative z-10 max-w-5xl mx-auto text-center px-4 pt-16 pb-12">
+            <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#00F0FF] glass-surface rounded-full mb-4 border border-[#00F0FF]/30">
+              Enterprise SaaS Promotional Suite
+            </span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight mb-6">
+              Next-Gen Enterprise Portal for <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] to-[#7C3AED]">High-Intent B2B Growth</span>
+            </h1>
+            <p class="text-slate-300 text-base md:text-lg max-w-2xl mx-auto mb-8">
+              Convert cold enterprise traffic into qualified product demonstrations and self-guided trial instances within 3 interactive steps.
+            </p>
+            <div class="flex justify-center gap-4">
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                class="bg-[#00F0FF] text-black font-bold px-6 py-3 rounded-lg hover:bg-cyan-300 transition cyan-glow text-sm">
+                Claim VIP Demo Instance
+              </button>
+              <button 
+                onClick={exportPDFProposal}
+                class="glass-surface border border-white/20 text-white font-semibold px-6 py-3 rounded-lg hover:border-[#00F0FF] transition text-sm">
+                Export Custom Proposal (.PDF)
+              </button>
+            </div>
+          </header>
+
+          {/* Social Proof & Trust Metrics Banner */}
+          <section class="max-w-5xl mx-auto px-4 mb-16">
+            <div class="glass-surface rounded-2xl p-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center border border-white/10">
+              <div>
+                <p class="text-3xl font-extrabold text-[#00F0FF]">1.2M+</p>
+                <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Active Seats Managed</p>
+              </div>
+              <div>
+                <p class="text-3xl font-extrabold text-[#7C3AED]">99.99%</p>
+                <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">System Uptime</p>
+              </div>
+              <div>
+                <p class="text-3xl font-extrabold text-white">3.4x</p>
+                <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Average Labor ROI</p>
+              </div>
+              <div>
+                <p class="text-3xl font-extrabold text-[#00F0FF]">&lt; 12 min</p>
+                <p class="text-xs text-slate-400 uppercase tracking-wider mt-1">Branch Sync Speed</p>
+              </div>
+            </div>
+          </section>
+
+          {/* 2. Live Feature Sandbox & Micro-Demos */}
+          <section class="max-w-5xl mx-auto px-4 mb-16">
+            <div class="glass-surface rounded-2xl p-8 border border-white/10">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h2 class="text-2xl font-bold text-white">Live Feature Sandbox & Micro-Demos</h2>
+                  <p class="text-xs text-slate-400">Interactive React state widgets demonstrating core enterprise functionality live.</p>
+                </div>
+                <div class="flex gap-2 bg-black/40 p-1 rounded-xl border border-white/10">
+                  <button 
+                    onClick={() => setActiveDemo('pos')} 
+                    class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${activeDemo === 'pos' ? 'bg-[#00F0FF] text-black' : 'text-slate-400 hover:text-white'}`}>
+                    POS Scan Simulation
+                  </button>
+                  <button 
+                    onClick={() => setActiveDemo('payroll')} 
+                    class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${activeDemo === 'payroll' ? 'bg-[#00F0FF] text-black' : 'text-slate-400 hover:text-white'}`}>
+                    Payroll Run
+                  </button>
+                  <button 
+                    onClick={() => setActiveDemo('analytics')} 
+                    class={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${activeDemo === 'analytics' ? 'bg-[#00F0FF] text-black' : 'text-slate-400 hover:text-white'}`}>
+                    Live Dashboard
+                  </button>
+                </div>
+              </div>
+
+              {/* Demo 1: Barcode POS Scanner */}
+              {activeDemo === 'pos' && (
+                <div class="bg-black/30 p-6 rounded-xl border border-white/10 space-y-4">
+                  <span class="text-xs font-bold uppercase text-[#00F0FF] tracking-wider">POS Barcode Hardware Simulation</span>
+                  <div class="flex gap-4">
+                    <input 
+                      type="text" 
+                      placeholder="Click 'Simulate Hardware Scan'" 
+                      value={scannedBarcode}
+                      readOnly
+                      class="flex-1 glass-surface px-4 py-2 rounded-lg text-sm text-white focus:outline-none"
+                    />
+                    <button 
+                      onClick={handleScan}
+                      class="bg-[#00F0FF] text-black font-bold px-4 py-2 rounded-lg text-xs hover:bg-cyan-300 transition">
+                      Simulate Hardware Scan
+                    </button>
+                  </div>
+                  <div class="space-y-2 mt-4">
+                    <span class="text-xs text-slate-400 block">Real-time Terminal Relay Logs:</span>
+                    {scanLogs.length === 0 ? (
+                      <p class="text-xs italic text-slate-500">No scans registered yet. Press button above.</p>
+                    ) : (
+                      scanLogs.map((log, i) => (
+                        <div key={i} class="text-xs font-mono bg-slate-900/80 p-2 rounded border border-white/5 text-emerald-400">
+                          &gt; {log}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Demo 2: Automated Payroll Run */}
+              {activeDemo === 'payroll' && (
+                <div class="bg-black/30 p-6 rounded-xl border border-white/10 space-y-4">
+                  <span class="text-xs font-bold uppercase text-[#7C3AED] tracking-wider">Automated Multi-Branch Payroll Run</span>
+                  <p class="text-xs text-slate-400">Simulate processing shift logs, taxes, and direct deposits across all active locations.</p>
+                  
+                  <div class="w-full bg-slate-800 rounded-full h-4 overflow-hidden p-0.5 border border-white/10">
+                    <div 
+                      class="bg-gradient-to-r from-[#00F0FF] to-[#7C3AED] h-full rounded-full transition-all duration-300" 
+                      style={{ width: `${payrollProgress}%` }}>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between items-center pt-2">
+                    <span class="text-xs font-mono text-slate-300">
+                      Status: {payrollProgress === 0 ? "Idle" : payrollProgress < 100 ? `Processing Batch (${payrollProgress}%)...` : "Completed - 1,420 Statements Dispatched!"}
+                    </span>
+                    <button 
+                      onClick={runPayrollSimulation} 
+                      disabled={isPayrollRunning}
+                      class="bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-xs transition">
+                      {isPayrollRunning ? "Executing..." : "Execute Automated Batch"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Demo 3: Real-Time Analytics Dashboard */}
+              {activeDemo === 'analytics' && (
+                <div class="bg-black/30 p-6 rounded-xl border border-white/10 space-y-4">
+                  <span class="text-xs font-bold uppercase text-[#00F0FF] tracking-wider">Live Telemetry Dashboard</span>
+                  <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="glass-surface p-4 rounded-lg">
+                      <span class="text-xs text-slate-400 block">Cloud Latency</span>
+                      <span class="text-xl font-bold text-emerald-400">14 ms</span>
+                    </div>
+                    <div class="glass-surface p-4 rounded-lg">
+                      <span class="text-xs text-slate-400 block">Active Terminals</span>
+                      <span class="text-xl font-bold text-white">4,812</span>
+                    </div>
+                    <div class="glass-surface p-4 rounded-lg">
+                      <span class="text-xs text-slate-400 block">Sync Health</span>
+                      <span class="text-xl font-bold text-[#00F0FF]">100%</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* 3. Interactive ROI & Cost Calculator (useReducer) */}
+          <section class="max-w-5xl mx-auto px-4 mb-16">
+            <div class="glass-surface rounded-2xl p-8 border border-white/10">
+              <h2 class="text-2xl font-bold text-white mb-1">Interactive ROI & Cost Calculator</h2>
+              <p class="text-xs text-slate-400 mb-8">Adjust headcount and operational branches to compute live labor and financial savings.</p>
+
+              <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                  <div>
+                    <div class="flex justify-between text-sm mb-2">
+                      <span class="text-slate-300 font-semibold">Employee Headcount</span>
+                      <span class="text-[#00F0FF] font-bold">{roiState.headcount} Employees</span>
+                    </div>
+                    <input 
+                      type="range" min="20" max="2000" step="20"
+                      value={roiState.headcount}
+                      onChange={(e) => dispatchRoi({ type: 'SET_HEADCOUNT', payload: e.target.value })}
+                      class="w-full accent-[#00F0FF] bg-slate-800 rounded-lg cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-sm mb-2">
+                      <span class="text-slate-300 font-semibold">Operational Branches</span>
+                      <span class="text-[#00F0FF] font-bold">{roiState.branches} Locations</span>
+                    </div>
+                    <input 
+                      type="range" min="1" max="100" step="1"
+                      value={roiState.branches}
+                      onChange={(e) => dispatchRoi({ type: 'SET_BRANCHES', payload: e.target.value })}
+                      class="w-full accent-[#00F0FF] bg-slate-800 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div class="glass-surface p-6 rounded-xl flex flex-col justify-center border border-[#7C3AED]/40 bg-[#7C3AED]/10 relative overflow-hidden">
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Projected Annual Monetary Savings</span>
+                  <div class="text-4xl font-extrabold text-white my-2">${estimatedSavings.toLocaleString()}</div>
+                  <div class="flex justify-between text-xs text-slate-300 mt-2 border-t border-white/10 pt-3">
+                    <span>Labor Hours Saved: <strong class="text-white">{hoursSavedAnnual.toLocaleString()} hrs</strong></span>
+                    <span>Projected ROI: <strong class="text-emerald-400">{roiPercentage}%</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 4. Interactive Module Configurator */}
+          <section class="max-w-5xl mx-auto px-4 mb-16">
+            <h2 class="text-2xl font-bold text-white mb-2">Interactive Module Configurator</h2>
+            <p class="text-xs text-slate-400 mb-6">Toggle architecture modules to observe real-time feature matrix adjustments.</p>
+            <div class="grid md:grid-cols-3 gap-6">
+              
+              <div 
+                onClick={() => toggleModule('biometric')}
+                class={`p-6 rounded-xl glass-surface glass-card cursor-pointer border transition ${modules.biometric ? 'border-[#00F0FF] bg-[#00F0FF]/10' : 'border-white/10'}`}>
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="font-bold text-white text-sm">Biometric Sync</h3>
+                  <input type="checkbox" checked={modules.biometric} readOnly class="accent-[#00F0FF] h-4 w-4" />
+                </div>
+                <p class="text-xs text-slate-400">Hardware verification layer for enterprise shift logs and automated clock-ins.</p>
+              </div>
+
+              <div 
+                onClick={() => toggleModule('cloudRelay')}
+                class={`p-6 rounded-xl glass-surface glass-card cursor-pointer border transition ${modules.cloudRelay ? 'border-[#00F0FF] bg-[#00F0FF]/10' : 'border-white/10'}`}>
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="font-bold text-white text-sm">Multi-Branch Cloud Relay</h3>
+                  <input type="checkbox" checked={modules.cloudRelay} readOnly class="accent-[#00F0FF] h-4 w-4" />
+                </div>
+                <p class="text-xs text-slate-400">Low-latency synchronization engine connecting global retail/office endpoints.</p>
+              </div>
+
+              <div 
+                onClick={() => toggleModule('aiTax')}
+                class={`p-6 rounded-xl glass-surface glass-card cursor-pointer border transition ${modules.aiTax ? 'border-[#00F0FF] bg-[#00F0FF]/10' : 'border-white/10'}`}>
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="font-bold text-white text-sm">AI Tax Automation</h3>
+                  <input type="checkbox" checked={modules.aiTax} readOnly class="accent-[#00F0FF] h-4 w-4" />
+                </div>
+                <p class="text-xs text-slate-400">Multi-jurisdictional compliance processing and dynamic payroll tax filings.</p>
+              </div>
+
+            </div>
+          </section>
+
+          {/* 5. Feature Comparison Matrix */}
+          <section class="max-w-5xl mx-auto px-4 mb-16">
+            <div class="glass-surface rounded-2xl p-8 border border-white/10">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h2 class="text-2xl font-bold text-white">Feature Comparison Matrix</h2>
+                  <p class="text-xs text-slate-400">Compare off-the-shelf HRIS/POS packages against modular NexusTech ERP suites.</p>
+                </div>
+                {/* Dynamic Filters */}
+                <div class="flex gap-2">
+                  {['All', 'Architecture', 'Compliance', 'HRIS'].map(cat => (
+                    <button 
+                      key={cat}
+                      onClick={() => setMatrixFilter(cat)}
+                      class={`px-3 py-1 rounded-lg text-xs transition ${matrixFilter === cat ? 'bg-[#7C3AED] text-white font-bold' : 'glass-surface text-slate-400 hover:text-white'}`}>
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic Filterable Comparison Table */}
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-white/10 text-xs text-slate-400 uppercase tracking-wider">
+                      <th class="py-3 px-4">Feature Domain</th>
+                      <th class="py-3 px-4 text-[#00F0FF]">NexusTech Enterprise ERP</th>
+                      <th class="py-3 px-4 text-slate-400">Traditional Legacy Systems</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-white/5 text-sm">
+                    {filteredMatrix.map((row, idx) => (
+                      <tr key={idx} class="hover:bg-white/5 transition">
+                        <td class="py-4 px-4 font-semibold text-white">{row.feature}</td>
+                        <td class="py-4 px-4 text-[#00F0FF] font-medium flex items-center gap-2">
+                          <span class="text-emerald-400">✓</span> {row.erp}
+                        </td>
+                        <td class="py-4 px-4 text-slate-400">{row.traditional}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* 6. Client Proof Carousel (Auto-Play with Hover Pause) */}
+          <section class="max-w-5xl mx-auto px-4 mb-20">
+            <div 
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              class="glass-surface rounded-2xl p-8 border border-white/10 relative overflow-hidden transition-all">
+              
+              <div class="flex justify-between items-center mb-6">
+                <span class="text-xs font-bold uppercase tracking-widest text-[#7C3AED]">
+                  Enterprise Proof & Social Trust
+                </span>
+                <span class="text-xs text-slate-500">
+                  {isHovered ? "⏸ Paused on Hover" : "▶ Auto-Playing"}
+                </span>
+              </div>
+
+              <div class="min-h-[120px] flex flex-col justify-center">
+                <blockquote class="text-lg italic text-slate-200 mb-4">
+                  "{testimonials[carouselIdx].quote}"
+                </blockquote>
+                <div class="flex justify-between items-end">
+                  <div>
+                    <h4 class="font-bold text-white text-sm">{testimonials[carouselIdx].client}</h4>
+                    <p class="text-xs text-slate-400">{testimonials[carouselIdx].role}</p>
+                  </div>
+                  <span class="px-3 py-1 bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 rounded-full text-xs font-bold">
+                    {testimonials[carouselIdx].metric}
+                  </span>
+                </div>
+              </div>
+
+              {/* Indicators */}
+              <div class="flex justify-center gap-2 mt-6">
+                {testimonials.map((_, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => setCarouselIdx(i)}
+                    class={`h-2 rounded-full transition-all ${carouselIdx === i ? 'w-8 bg-[#00F0FF]' : 'w-2 bg-slate-700'}`} 
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* 7. Sticky ConfiguratorBar */}
+          <div class="fixed bottom-0 inset-x-0 z-30 glass-surface bg-[#0B0F19]/95 border-t border-white/10 px-6 py-4 backdrop-blur-md">
+            <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div class="text-xs sm:text-sm">
+                <span class="text-slate-400">Current Selection: </span>
+                <span class="text-white font-semibold">{roiState.headcount} Seats | {roiState.branches} Branches</span>
+              </div>
+              <div class="flex gap-3">
+                <button 
+                  onClick={exportPDFProposal}
+                  class="text-xs glass-surface border border-white/20 text-white font-semibold px-4 py-2.5 rounded-lg hover:border-[#00F0FF] transition">
+                  Export Custom Proposal (.PDF)
+                </button>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  class="text-xs bg-[#00F0FF] text-black font-bold px-4 py-2.5 rounded-lg hover:bg-cyan-300 transition cyan-glow">
+                  Claim 14-Day VIP Sandbox
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 8. VIP Sandbox Access Modal */}
+          {isModalOpen && (
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+              <div class="glass-surface bg-[#0B0F19] rounded-2xl p-8 max-w-md w-full border border-white/20 relative shadow-2xl">
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  class="absolute top-4 right-4 text-slate-400 hover:text-white text-sm">✕</button>
+                <h3 class="text-xl font-bold text-white mb-1">VIP Sandbox Access</h3>
+                <p class="text-xs text-slate-400 mb-6">Receive a 14-day pre-populated enterprise instance tailored to your tech stack.</p>
+                
+                <form class="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); alert("Sandbox Access Granted! Check your corporate email."); }}>
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Company Domain</label>
+                    <input type="text" placeholder="company.com" required class="w-full glass-surface px-3 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-[#00F0FF]" />
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-300 mb-1">Role / Authority</label>
+                    <input type="text" placeholder="CTO / VP of Operations" required class="w-full glass-surface px-3 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-[#00F0FF]" />
+                  </div>
+                  <button type="submit" class="w-full bg-[#7C3AED] text-white py-3 rounded-lg font-bold text-sm hover:bg-[#6D28D9] transition neon-glow mt-2">
+                    Start 14-Day Instant Trial
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    // Render App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
